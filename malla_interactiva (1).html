@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Malla Interactiva - Ingeniería Industrial</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .cuatrimestre {
+      margin: 20px 0;
+      padding: 10px;
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+    .cuatrimestre h2 {
+      margin-top: 0;
+    }
+    .materia {
+      display: inline-block;
+      margin: 6px;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 8px;
+      background-color: lightgray;
+      cursor: pointer;
+    }
+    .aprobada {
+      background-color: #4caf50 !important;
+      color: white;
+    }
+    .desbloqueada {
+      background-color: #ffeb3b !important;
+    }
+    .bloqueada {
+      background-color: #e57373 !important;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <h1>Malla Interactiva - Ingeniería Industrial</h1>
+
+  <div id="malla"></div>
+
+  <script>
+    const materias = {
+      // Año 1 - 1C
+      "A1": { nombre: "Física I", correlativas: [] },
+      "A2": { nombre: "Álgebra y Geometría Analítica", correlativas: [] },
+      "A3": { nombre: "Cálculo I", correlativas: [] },
+      "A4": { nombre: "Sistemas de Representación", correlativas: [] },
+
+      // Año 1 - 2C
+      "B1": { nombre: "Fundamentos de Química General", correlativas: [] },
+      "B2": { nombre: "Elementos de Álgebra Lineal", correlativas: ["A2"] },
+      "B3": { nombre: "Informática", correlativas: ["A2"] },
+      "B4": { nombre: "Cálculo II", correlativas: ["A3"] },
+      "B5": { nombre: "Física II", correlativas: ["A1"] },
+
+      // Año 2 - 1C
+      "C1": { nombre: "Física III", correlativas: ["B4", "B5"] },
+      "C2": { nombre: "Introducción a la Ingeniería Industrial", correlativas: ["B3"] },
+      "C3": { nombre: "Cálculo III", correlativas: ["A2", "A3", "B2", "B4"] },
+      "C4": { nombre: "Estabilidad y Resistencia de los Materiales", correlativas: ["A1", "A2", "A3"] },
+      "C5": { nombre: "Economía", correlativas: ["A3"] },
+
+      // Año 2 - 2C
+      "D1": { nombre: "Cálculo IV", correlativas: ["B2", "B4", "C3"] },
+      "D2": { nombre: "Probabilidades y Estadística", correlativas: ["B2", "B4", "C3"] },
+      "D3": { nombre: "Química Orgánica", correlativas: ["B1"] },
+      "D4": { nombre: "Ciencia de los Materiales", correlativas: ["A3", "B1", "B5"] },
+
+      // Año 3 - 1C
+      "E1": { nombre: "Organización de Empresas I", correlativas: ["C2", "C5"] },
+      "E2": { nombre: "Fenómenos de Transferencia", correlativas: ["B5", "C1", "B1", "D1"] },
+      "E3": { nombre: "Termodinámica y Máquinas Térmicas", correlativas: ["B1", "C5"] },
+      "E4": { nombre: "Electrotecnia e Instalaciones Eléctricas", correlativas: ["A2", "B4", "B5", "C1"] },
+
+      // Año 3 - 2C
+      "F1": { nombre: "Mecánica y Mecanismos", correlativas: ["C4", "A4"] },
+      "F2": { nombre: "Ingeniería Ambiental", correlativas: ["B1", "D3"] },
+      "F3": { nombre: "Organización de Empresas II", correlativas: ["C5", "E1"] },
+      "F4": { nombre: "Operaciones Industriales", correlativas: ["C1", "E3", "E2"] },
+
+      // Año 4 - 1C
+      "G1": { nombre: "Higiene y Seguridad Laboral", correlativas: ["D3", "E1", "F2"] },
+      "G2": { nombre: "Procesos Industriales", correlativas: ["E3", "E2"] },
+      "G3": { nombre: "Tecnologías y Procesos de Producción", correlativas: ["D4", "D3", "F1"] },
+      "G4": { nombre: "Investigación Operativa", correlativas: ["D2", "D1", "F3"] },
+
+      // Año 4 - 2C
+      "H1": { nombre: "Electiva I", correlativas: [] },
+      "H2": { nombre: "Sistemas Informáticos Industriales", correlativas: ["E1", "D1", "B3", "F3"] },
+      "H3": { nombre: "Electrónica Industrial", correlativas: ["E4"] },
+      "H4": { nombre: "Organización Industrial", correlativas: ["F1", "F3", "G4"] },
+
+      // Año 5 - 1C
+      "I1": { nombre: "Electiva II", correlativas: [] },
+      "I2": { nombre: "Instalaciones Industriales", correlativas: ["E3", "F4", "E4"] },
+      "I3": { nombre: "Automatización y Control de Procesos", correlativas: ["F4", "H3", "E4"] },
+      "I4": { nombre: "Legislación Empresarial", correlativas: ["G1", "G2"] },
+
+      // Año 5 - 2C
+      "J1": { nombre: "Electiva III", correlativas: [] },
+      "J2": { nombre: "Optimización de Sistemas de Gestión", correlativas: ["H2", "H4", "F2"] },
+      "J3": { nombre: "Gestión de la Calidad", correlativas: ["H4", "F4"] },
+      "J4": { nombre: "Formulación y Evaluación de Proyectos", correlativas: ["H4", "H2"] }
+    };
+
+    const ordenCuatrimestres = [
+      ["A1", "A2", "A3", "A4"],
+      ["B1", "B2", "B3", "B4", "B5"],
+      ["C1", "C2", "C3", "C4", "C5"],
+      ["D1", "D2", "D3", "D4"],
+      ["E1", "E2", "E3", "E4"],
+      ["F1", "F2", "F3", "F4"],
+      ["G1", "G2", "G3", "G4"],
+      ["H1", "H2", "H3", "H4"],
+      ["I1", "I2", "I3", "I4"],
+      ["J1", "J2", "J3", "J4"]
+    ];
+
+    const malla = document.getElementById("malla");
+
+    ordenCuatrimestres.forEach((grupo, i) => {
+      const cuatri = document.createElement("div");
+      cuatri.className = "cuatrimestre";
+      cuatri.innerHTML = `<h2>${Math.floor(i/2)+1}º Año - ${i%2+1}º Cuatrimestre</h2>`;
+
+      grupo.forEach(codigo => {
+        const mat = materias[codigo];
+        const btn = document.createElement("button");
+        btn.textContent = mat.nombre;
+        btn.className = mat.correlativas.length ? "materia bloqueada" : "materia desbloqueada";
+        btn.disabled = mat.correlativas.length > 0;
+        btn.dataset.codigo = codigo;
+
+        btn.onclick = () => {
+          btn.classList.remove("bloqueada", "desbloqueada");
+          btn.classList.add("aprobada");
+          btn.disabled = true;
+
+          Object.keys(materias).forEach(cod => {
+            const mat2 = materias[cod];
+            const btn2 = document.querySelector(`[data-codigo='${cod}']`);
+            if (!btn2 || btn2.classList.contains("aprobada")) return;
+
+            const deps = mat2.correlativas;
+            const aprobadas = deps.every(dep => {
+              const b = document.querySelector(`[data-codigo='${dep}']`);
+              return b && b.classList.contains("aprobada");
+            });
+            if (aprobadas) {
+              btn2.classList.remove("bloqueada");
+              btn2.classList.add("desbloqueada");
+              btn2.disabled = false;
+            }
+          });
+        };
+
+        cuatri.appendChild(btn);
+      });
+
+      malla.appendChild(cuatri);
+    });
+  </script>
+</body>
+</html>
